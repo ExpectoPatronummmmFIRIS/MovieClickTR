@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Download, AlertCircle, Lock } from 'lucide-react';
 
 export default function MovieClick() {
-  const [status, setStatus] = useState(null); // eslint-disable-next-line no-unused-vars
+  const [status, setStatus] = useState(null);
   const [episode, setEpisode] = useState(null);
   const [season, setSeason] = useState('8');
   const [episodeNum, setEpisodeNum] = useState('1');
@@ -12,7 +12,7 @@ export default function MovieClick() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const API_BASE = 'https://your-api-domain.railway.app';
+  const API_BASE = 'https://movieclicktr-production.up.railway.app';
 
   useEffect(() => {
     fetchStatus();
@@ -86,15 +86,19 @@ export default function MovieClick() {
             <p className="text-xl text-blue-400">The Rookie - Exclusive Episodes</p>
           </div>
 
-          <div className="bg-red-900 border border-red-700 rounded-lg p-6 mb-8 flex items-start gap-3">
-            <AlertCircle className="text-red-300 flex-shrink-0 mt-1" size={24} />
-            <div>
-              <h3 className="font-bold text-red-200 mb-1">Coming Soon</h3>
-              <p className="text-red-100">
-                No episodes shown at the moment. MovieClick will go online on January 6 2025 10 pm ET when Season 8 premieres.
-              </p>
+          {status && (
+            <div className={`border rounded-lg p-6 mb-8 flex items-start gap-3 ${status.status === 'LIVE' ? 'bg-green-900 border-green-700' : 'bg-red-900 border-red-700'}`}>
+              <AlertCircle className={`flex-shrink-0 mt-1 ${status.status === 'LIVE' ? 'text-green-300' : 'text-red-300'}`} size={24} />
+              <div>
+                <h3 className={`font-bold mb-1 ${status.status === 'LIVE' ? 'text-green-200' : 'text-red-200'}`}>
+                  {status.status === 'LIVE' ? 'Live Now' : 'Coming Soon'}
+                </h3>
+                <p className={status.status === 'LIVE' ? 'text-green-100' : 'text-red-100'}>
+                  {status.message}
+                </p>
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="bg-slate-800 rounded-lg p-8 border border-slate-700">
             <div className="mb-6">
