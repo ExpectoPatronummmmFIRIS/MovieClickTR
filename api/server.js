@@ -12,7 +12,7 @@ const GUILD_ID = process.env.GUILD_ID;
 const BOOSTER_ROLE_ID = process.env.BOOSTER_ROLE_ID;
 const LEVEL_10_ROLE_ID = process.env.LEVEL_10_ROLE_ID;
 
-const LAUNCH_DATE = new Date('2025-01-06T22:00:00Z');
+const LAUNCH_DATE = new Date(process.env.LAUNCH_DATE);
 
 app.get('/api/status', (req, res) => {
   const now = new Date();
