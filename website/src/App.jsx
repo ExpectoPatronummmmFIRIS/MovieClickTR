@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, AlertCircle, Lock, LogOut } from 'lucide-react';
+import { Download, AlertCircle, Lock, LogOut, Play, Zap } from 'lucide-react';
 
 export default function MovieClick() {
   const [status, setStatus] = useState(null);
@@ -13,20 +13,22 @@ export default function MovieClick() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState('home');
+  const [fadeIn, setFadeIn] = useState(false);
 
   const API_BASE = 'https://movieclicktr-production.up.railway.app';
 
   useEffect(() => {
+    setFadeIn(true);
     fetchStatus();
     checkAuth();
   }, []);
 
-useEffect(() => {
-  if (isAuthenticated && discordToken) {
-    fetchUserProfile();
-  }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [isAuthenticated, discordToken]);
+  useEffect(() => {
+    if (isAuthenticated && discordToken) {
+      fetchUserProfile();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, discordToken]);
 
   const fetchStatus = async () => {
     try {
@@ -64,7 +66,7 @@ useEffect(() => {
 
   const connectDiscord = () => {
     const clientId = '1446667555313025148';
-    const redirectUri = encodeURIComponent(window.location.href);
+    const redirectUri = encodeURIComponent('https://movieclicktr-production.up.railway.app/api/discord/callback');
     const scope = 'identify guilds.members.read';
     
     window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;
@@ -107,119 +109,128 @@ useEffect(() => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-black">
-      <div className="relative z-50 mx-auto w-full flex-row items-center justify-between self-start px-4 py-3 lg:flex" style={{ backdropFilter: 'blur(10px)', boxShadow: 'rgba(34, 42, 53, 0.06) 0px 0px 24px, rgba(0, 0, 0, 0.05) 0px 1px 1px' }}>
-        <div className="flex items-center justify-between w-full lg:w-auto">
-          <div className="flex items-center space-x-3">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-white via-gray-200 to-white bg-clip-text text-transparent">MovieClick</h1>
-          </div>
-        </div>
-
-        <div className="hidden lg:flex items-center gap-8 mx-8">
-          <button
-            onClick={() => setCurrentPage('home')}
-            className={`px-4 py-2 rounded-lg transition ${currentPage === 'home' ? 'text-white bg-white/10' : 'text-neutral-300 hover:text-white'}`}
-          >
-            Home
-          </button>
-          <button
-            onClick={() => setCurrentPage('status')}
-            className={`px-4 py-2 rounded-lg transition ${currentPage === 'status' ? 'text-white bg-white/10' : 'text-neutral-300 hover:text-white'}`}
-          >
-            Status
-          </button>
-        </div>
-
-        <div className="flex items-center gap-4 mt-4 lg:mt-0">
-          {isAuthenticated && userProfile ? (
-            <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-white/10 backdrop-blur">
-              <img
-                src={`https://cdn.discordapp.com/avatars/${userProfile.id}/${userProfile.avatar}.png`}
-                alt={userProfile.username}
-                className="w-8 h-8 rounded-full border border-white/20"
-              />
-              <span className="text-white font-semibold text-sm hidden sm:inline">{userProfile.username}</span>
-              <button
-                onClick={disconnect}
-                className="p-1 hover:bg-white/20 rounded-full transition"
-                title="Disconnect"
-              >
-                <LogOut size={16} className="text-white" />
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={connectDiscord}
-              className="px-4 py-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm transition"
-            >
-              Connect Discord
-            </button>
-          )}
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-900 to-black overflow-hidden">
+      <div className="fixed inset-0 opacity-30">
+        <div className="absolute top-20 left-20 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
+        <div className="absolute top-40 right-20 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000"></div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
+      <div className="relative z-50">
+        <nav className="backdrop-blur-xl bg-white/5 border-b border-white/10 sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-600 rounded-lg flex items-center justify-center">
+                <Play className="w-6 h-6 text-white fill-white" />
+              </div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-200 via-pink-200 to-purple-200 bg-clip-text text-transparent">MovieClick</h1>
+            </div>
+
+            <div className="hidden lg:flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage('home')}
+                className={`px-4 py-2 rounded-lg transition duration-300 ${currentPage === 'home' ? 'bg-white/20 backdrop-blur-md text-white' : 'text-gray-300 hover:text-white'}`}
+              >
+                Home
+              </button>
+              <button
+                onClick={() => setCurrentPage('status')}
+                className={`px-4 py-2 rounded-lg transition duration-300 ${currentPage === 'status' ? 'bg-white/20 backdrop-blur-md text-white' : 'text-gray-300 hover:text-white'}`}
+              >
+                Status
+              </button>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {isAuthenticated && userProfile ? (
+                <div className="flex items-center gap-3 px-4 py-2 rounded-full backdrop-blur-xl bg-white/10 border border-white/20 hover:bg-white/20 transition duration-300">
+                  <img
+                    src={`https://cdn.discordapp.com/avatars/${userProfile.id}/${userProfile.avatar}.png`}
+                    alt={userProfile.username}
+                    className="w-8 h-8 rounded-full border border-white/30"
+                  />
+                  <span className="text-white font-semibold text-sm hidden sm:inline">{userProfile.username}</span>
+                  <button
+                    onClick={disconnect}
+                    className="p-1 hover:bg-white/20 rounded-full transition"
+                    title="Disconnect"
+                  >
+                    <LogOut size={16} className="text-white" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={connectDiscord}
+                  className="px-4 py-2 rounded-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-semibold text-sm transition duration-300 transform hover:scale-105"
+                >
+                  Connect Discord
+                </button>
+              )}
+            </div>
+          </div>
+        </nav>
+
+        <div className={`transition-opacity duration-1000 ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
           {currentPage === 'home' && (
-            <>
-              <div className="text-center mb-8">
-                <h1 className="text-5xl font-bold text-white mb-2">MovieClick</h1>
-                <p className="text-xl text-blue-400">The Rookie - Exclusive Episodes</p>
+            <div className="max-w-7xl mx-auto px-4 py-16">
+              <div className="text-center mb-12">
+                <h1 className="text-6xl md:text-7xl font-bold bg-gradient-to-r from-purple-200 via-pink-200 to-purple-200 bg-clip-text text-transparent mb-4 animate-pulse">MovieClick</h1>
+                <p className="text-xl text-purple-200">Watch The Rookie - Exclusive Episodes</p>
               </div>
 
               {status && (
-                <div className={`border rounded-lg p-6 mb-8 flex items-start gap-3 ${status.status === 'LIVE' ? 'bg-green-900 border-green-700' : 'bg-red-900 border-red-700'}`}>
-                  <AlertCircle className={`flex-shrink-0 mt-1 ${status.status === 'LIVE' ? 'text-green-300' : 'text-red-300'}`} size={24} />
-                  <div>
-                    <h3 className={`font-bold mb-1 ${status.status === 'LIVE' ? 'text-green-200' : 'text-red-200'}`}>
-                      {status.status === 'LIVE' ? 'Live Now' : 'Coming Soon'}
+                <div className={`mb-8 backdrop-blur-xl border rounded-2xl p-8 transition duration-500 transform hover:scale-105 ${status.status === 'LIVE' ? 'bg-gradient-to-br from-green-500/20 to-emerald-600/20 border-green-400/30' : 'bg-gradient-to-br from-red-500/20 to-pink-600/20 border-red-400/30'}`}>
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className={`w-4 h-4 rounded-full ${status.status === 'LIVE' ? 'bg-green-400 animate-pulse' : 'bg-red-400 animate-pulse'}`}></div>
+                    <h3 className={`text-2xl font-bold ${status.status === 'LIVE' ? 'text-green-200' : 'text-red-200'}`}>
+                      {status.status === 'LIVE' ? '🟢 LIVE NOW' : '🔴 COMING SOON'}
                     </h3>
-                    <p className={status.status === 'LIVE' ? 'text-green-100' : 'text-red-100'}>
-                      {status.message}
-                    </p>
                   </div>
+                  <p className={`text-lg ${status.status === 'LIVE' ? 'text-green-100' : 'text-red-100'}`}>
+                    {status.message}
+                  </p>
                 </div>
               )}
 
-              <div className="bg-slate-800 rounded-lg p-8 border border-slate-700">
-                <div className="mb-6">
-                  {!isAuthenticated ? (
+              <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-8 md:p-12 hover:bg-white/15 transition duration-500">
+                {!isAuthenticated ? (
+                  <div className="text-center">
+                    <Lock className="w-16 h-16 mx-auto text-purple-300 mb-4" />
+                    <h2 className="text-3xl font-bold text-white mb-4">Premium Access Required</h2>
+                    <p className="text-gray-300 mb-8">Connect your Discord to watch exclusive episodes</p>
                     <button
                       onClick={connectDiscord}
-                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition"
+                      className="px-8 py-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold text-lg transition duration-300 transform hover:scale-105 inline-flex items-center gap-2"
                     >
-                      Connect Discord Account
+                      <Zap size={24} />
+                      Connect Discord Now
                     </button>
-                  ) : (
-                    <div className="bg-green-900 border border-green-700 rounded-lg p-4">
-                      <p className="text-green-200">✓ Discord connected</p>
-                    </div>
-                  )}
-                </div>
-
-                {isAuthenticated && (
-                  <>
-                    <div className="grid grid-cols-2 gap-4 mb-6">
+                  </div>
+                ) : (
+                  <div>
+                    <h2 className="text-3xl font-bold text-white mb-8">Select Episode</h2>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                       <div>
-                        <label className="block text-slate-300 font-semibold mb-2">Season</label>
+                        <label className="block text-purple-200 font-semibold mb-3">Season</label>
                         <input
                           type="number"
                           min="1"
                           max="10"
                           value={season}
                           onChange={(e) => setSeason(e.target.value)}
-                          className="w-full bg-slate-700 border border-slate-600 text-white rounded px-4 py-2 focus:outline-none focus:border-blue-500"
+                          className="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-purple-400 transition duration-300"
                         />
                       </div>
                       <div>
-                        <label className="block text-slate-300 font-semibold mb-2">Episode</label>
+                        <label className="block text-purple-200 font-semibold mb-3">Episode</label>
                         <input
                           type="number"
                           min="1"
                           max="20"
                           value={episodeNum}
                           onChange={(e) => setEpisodeNum(e.target.value)}
-                          className="w-full bg-slate-700 border border-slate-600 text-white rounded px-4 py-2 focus:outline-none focus:border-blue-500"
+                          className="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-purple-400 transition duration-300"
                         />
                       </div>
                     </div>
@@ -227,81 +238,88 @@ useEffect(() => {
                     <button
                       onClick={fetchEpisode}
                       disabled={loading}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition disabled:opacity-50"
+                      className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-4 rounded-xl transition duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
                     >
+                      <Play size={24} />
                       {loading ? 'Loading...' : 'Watch Episode'}
                     </button>
-                  </>
+                  </div>
                 )}
 
                 {error && (
-                  <div className="mt-6 bg-red-900 border border-red-700 rounded-lg p-4">
-                    <p className="text-red-200">{error}</p>
+                  <div className="mt-6 backdrop-blur-md bg-red-500/20 border border-red-400/30 rounded-xl p-4">
+                    <p className="text-red-200 font-semibold">{error}</p>
                   </div>
                 )}
 
                 {episode && (
-                  <div className="mt-8 space-y-6">
-                    <div className="bg-slate-700 rounded-lg p-6">
-                      <h2 className="text-2xl font-bold text-white mb-4">{episode.episode}</h2>
-                      
-                      <div className="aspect-video bg-black rounded-lg mb-6 flex items-center justify-center">
-                        <p className="text-slate-400">Player would load here</p>
-                      </div>
-
-                      {episode.canDownload && (
-                        <button className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center gap-2 transition">
-                          <Download size={20} />
-                          Download Episode
-                        </button>
-                      )}
+                  <div className="mt-8 backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-8 animate-fadeIn">
+                    <h2 className="text-3xl font-bold text-white mb-6">{episode.episode}</h2>
+                    
+                    <div className="aspect-video bg-gradient-to-br from-black/50 to-purple-900/50 rounded-2xl mb-6 flex items-center justify-center border border-white/10">
+                      <Play size={64} className="text-purple-400" />
                     </div>
-                  </div>
-                )}
 
-                {!isAuthenticated && (
-                  <div className="mt-8 bg-slate-700 rounded-lg p-6 flex items-start gap-3">
-                    <Lock className="text-slate-400 flex-shrink-0 mt-1" size={24} />
-                    <div>
-                      <h3 className="font-bold text-slate-200 mb-2">Boosters & Level 10+ Only</h3>
-                      <p className="text-slate-400">
-                        Downloads are exclusive to boosters and level 10+ members. Connect your Discord to verify your role.
-                      </p>
-                    </div>
+                    {episode.canDownload && (
+                      <button className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition duration-300 transform hover:scale-105">
+                        <Download size={24} />
+                        Download Episode
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
-            </>
+            </div>
           )}
 
           {currentPage === 'status' && (
-            <div className="bg-slate-800 rounded-lg p-8 border border-slate-700">
-              <h2 className="text-3xl font-bold text-white mb-6">System Status</h2>
+            <div className="max-w-4xl mx-auto px-4 py-16">
+              <h2 className="text-5xl font-bold text-white mb-12 text-center bg-gradient-to-r from-purple-200 via-pink-200 to-purple-200 bg-clip-text text-transparent">System Status</h2>
               
               {status && (
-                <div className={`border-2 rounded-lg p-8 ${status.status === 'LIVE' ? 'bg-green-900/20 border-green-700' : 'bg-red-900/20 border-red-700'}`}>
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className={`w-4 h-4 rounded-full ${status.status === 'LIVE' ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}></div>
-                    <h3 className={`text-2xl font-bold ${status.status === 'LIVE' ? 'text-green-200' : 'text-red-200'}`}>
+                <div className={`backdrop-blur-xl border-2 rounded-3xl p-12 transition duration-500 ${status.status === 'LIVE' ? 'bg-gradient-to-br from-green-500/20 to-emerald-600/20 border-green-400/30' : 'bg-gradient-to-br from-red-500/20 to-pink-600/20 border-red-400/30'}`}>
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className={`w-6 h-6 rounded-full ${status.status === 'LIVE' ? 'bg-green-400' : 'bg-red-400'} animate-pulse`}></div>
+                    <h3 className={`text-4xl font-bold ${status.status === 'LIVE' ? 'text-green-200' : 'text-red-200'}`}>
                       {status.status === 'LIVE' ? '🟢 LIVE' : '🔴 COMING SOON'}
                     </h3>
                   </div>
-                  <p className={`text-lg ${status.status === 'LIVE' ? 'text-green-100' : 'text-red-100'}`}>
+                  <p className={`text-2xl ${status.status === 'LIVE' ? 'text-green-100' : 'text-red-100'} mb-6`}>
                     {status.message}
                   </p>
-                  <p className="text-slate-300 mt-4">
-                    Launch Date: <span className="text-white font-semibold">January 6, 2025 at 10:00 PM ET</span>
+                  <p className="text-gray-300 text-lg">
+                    <span className="text-purple-200">Launch Date:</span> <span className="text-white font-bold">January 6, 2025 at 10:00 PM ET</span>
                   </p>
                 </div>
               )}
             </div>
           )}
-
-          <div className="mt-8 text-center text-slate-400 text-sm">
-            <p>MovieClick • The Rookie Streaming Platform</p>
-          </div>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes blob {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .animate-blob {
+          animation: blob 7s infinite;
+        }
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+        .animation-delay-4000 {
+          animation-delay: 4s;
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.5s ease-in;
+        }
+      `}</style>
     </div>
   );
 }
