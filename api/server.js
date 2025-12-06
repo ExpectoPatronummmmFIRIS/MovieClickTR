@@ -7,6 +7,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.get('/api/test', (req, res) => {
+  res.json({
+    DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID ? 'SET' : 'MISSING',
+    DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET ? 'SET' : 'MISSING',
+    GUILD_ID: process.env.GUILD_ID ? 'SET' : 'MISSING',
+    LAUNCH_DATE: process.env.LAUNCH_DATE ? 'SET' : 'MISSING'
+  });
+});
+
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
 const BOOSTER_ROLE_ID = process.env.BOOSTER_ROLE_ID;
