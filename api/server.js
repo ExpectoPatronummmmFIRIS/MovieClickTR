@@ -36,7 +36,7 @@ app.get('/api/s-:season-e-:episode/player', async (req, res) => {
   if (!isLive) {
     return res.json({
       error: 'Not available',
-      message: 'No episodes shown at the moment. MovieClick will go online on January 6 2025 10 pm ET when Season 8 premieres',
+      message: 'No episodes shown at the moment. MovieClick will go online on January 6 2026 10 pm ET when Season 8 premieres',
       episode: null,
       canDownload: false
     });
