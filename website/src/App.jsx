@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Download, AlertCircle, Lock } from 'lucide-react';
 
 export default function MovieClick() {
-  const [status, setStatus] = useState(null);
+  const [status, setStatus] = useState(null); // eslint-disable-next-line no-unused-vars
   const [episode, setEpisode] = useState(null);
   const [season, setSeason] = useState('8');
   const [episodeNum, setEpisodeNum] = useState('1');
