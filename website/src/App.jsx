@@ -42,7 +42,7 @@ export default function MovieClick() {
   };
 
   const connectDiscord = () => {
-    const clientId = 'YOUR_DISCORD_CLIENT_ID';
+    const clientId = '1446667555313025148';
     const redirectUri = encodeURIComponent(window.location.href);
     const scope = 'identify guilds.members.read';
     
