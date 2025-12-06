@@ -11,7 +11,8 @@ const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
 const BOOSTER_ROLE_ID = process.env.BOOSTER_ROLE_ID;
 const LEVEL_10_ROLE_ID = process.env.LEVEL_10_ROLE_ID;
-
+const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
+const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 const LAUNCH_DATE = new Date(process.env.LAUNCH_DATE);
 
 app.get('/api/status', (req, res) => {
@@ -20,8 +21,8 @@ app.get('/api/status', (req, res) => {
   
   res.json({
     status: isLive ? 'LIVE' : 'COMING_SOON',
-    launchDate: '2025-01-06T22:00:00Z',
-    message: isLive ? 'Episodes are now available' : 'No episodes shown at the moment. MovieClick will go online on January 6 2025 10 pm ET when Season 8 premieres'
+    launchDate: '2026-01-06T22:00:00Z',
+    message: isLive ? 'Episodes are now available' : 'No episodes shown at the moment. MovieClick will go online on January 6 2026 10 pm ET when Season 8 premieres'
   });
 });
 
@@ -87,6 +88,31 @@ app.get('/api/s-:season-e-:episode/player', async (req, res) => {
       error: 'Authentication failed',
       message: 'Could not verify Discord account'
     });
+  }
+});
+
+app.get('/api/discord/callback', async (req, res) => {
+  const code = req.query.code;
+  if (!code) return res.status(400).json({ error: 'No code provided' });
+
+  try {
+    const tokenResponse = await axios.post('https://discord.com/api/v10/oauth2/token', {
+      client_id: DISCORD_CLIENT_ID,
+      client_secret: DISCORD_CLIENT_SECRET,
+      code,
+      grant_type: 'authorization_code',
+      redirect_uri: 'https://movieclicktr-production.up.railway.app/api/discord/callback'
+    });
+
+    const accessToken = tokenResponse.data.access_token;
+    const userResponse = await axios.get('https://discord.com/api/v10/users/@me', {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+
+    const userId = userResponse.data.id;
+    res.redirect(`https://movieclick.up.railway.app/?token=${accessToken}&userId=${userId}`);
+  } catch (error) {
+    res.status(500).json({ error: 'OAuth2 exchange failed', details: error.message });
   }
 });
 
