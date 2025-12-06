@@ -21,11 +21,12 @@ export default function MovieClick() {
     checkAuth();
   }, []);
 
-  useEffect(() => {
-    if (isAuthenticated && discordToken) {
-      fetchUserProfile();
-    }
-  }, [isAuthenticated, discordToken]);
+useEffect(() => {
+  if (isAuthenticated && discordToken) {
+    fetchUserProfile();
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [isAuthenticated, discordToken]);
 
   const fetchStatus = async () => {
     try {
