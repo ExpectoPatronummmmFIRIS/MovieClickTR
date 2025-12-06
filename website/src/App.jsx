@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, AlertCircle, Lock, LogOut, Play, Zap } from 'lucide-react';
+import { Download, Lock, LogOut, Play, Zap } from 'lucide-react';
 
 export default function MovieClick() {
   const [status, setStatus] = useState(null);
