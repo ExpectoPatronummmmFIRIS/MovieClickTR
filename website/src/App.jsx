@@ -29,14 +29,12 @@ export default function MovieClick() {
     { name: 'Mekia Cox', role: 'Nyla Harper', image: 'https://m.media-amazon.com/images/M/MV5BYWRmNjdkMjEtZTQ3OS00ZGEyLTkwZGMtNWI5MWZjMjllNTdmXkEyXkFqcGc@._V1_UY317_CR16,0,214,317_AL_.jpg' }
   ];
 
-  const [castScroll, setCastScroll] = useState(0);
-
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentPoster((prev) => (prev + 1) % rookiePosters.length);
     }, 6000);
     return () => clearInterval(interval);
-  }, []);
+  }, [rookiePosters.length]);
 
   const fetchStatus = async () => {
     try {
