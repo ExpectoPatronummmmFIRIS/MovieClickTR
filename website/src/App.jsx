@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Download, Lock, LogOut, Play, Film, Star, Calendar, Clock, Info, Home, TrendingUp } from 'lucide-react';
+import { Download, Lock, LogOut, Play, Film, Star, Calendar, Clock, Home, TrendingUp } from 'lucide-react';
 
 export default function MovieClick() {
   const [status, setStatus] = useState(null);
@@ -13,22 +13,9 @@ export default function MovieClick() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState('home');
-  const [showData, setShowData] = useState(null);
   const videoRef = useRef(null);
 
   const API_BASE = 'https://movieclicktr-production.up.railway.app';
-
-  useEffect(() => {
-    fetchStatus();
-    checkAuth();
-    loadFontAwesome();
-  }, []);
-
-  useEffect(() => {
-    if (isAuthenticated && discordToken) {
-      fetchUserProfile();
-    }
-  }, [isAuthenticated, discordToken]);
 
   const loadFontAwesome = () => {
     if (!document.querySelector('link[href*="font-awesome"]')) {
@@ -49,7 +36,8 @@ export default function MovieClick() {
     }
   };
 
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = React.useCallback(async () => {
+    if (!discordToken) return;
     try {
       const res = await fetch('https://discordapp.com/api/users/@me', {
         headers: { Authorization: `Bearer ${discordToken}` }
@@ -59,7 +47,19 @@ export default function MovieClick() {
     } catch (err) {
       console.error('Failed to fetch user profile');
     }
-  };
+  }, [discordToken]);
+
+  useEffect(() => {
+    fetchStatus();
+    checkAuth();
+    loadFontAwesome();
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated && discordToken) {
+      fetchUserProfile();
+    }
+  }, [isAuthenticated, discordToken, fetchUserProfile]);
 
   const checkAuth = () => {
     const params = new URLSearchParams(window.location.search);
