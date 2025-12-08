@@ -7,22 +7,41 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get('/api/test', (req, res) => {
-  res.json({
-    DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID ? 'SET' : 'MISSING',
-    DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET ? 'SET' : 'MISSING',
-    GUILD_ID: process.env.GUILD_ID ? 'SET' : 'MISSING',
-    LAUNCH_DATE: process.env.LAUNCH_DATE ? 'SET' : 'MISSING'
-  });
-});
-
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
 const BOOSTER_ROLE_ID = process.env.BOOSTER_ROLE_ID;
 const LEVEL_10_ROLE_ID = process.env.LEVEL_10_ROLE_ID;
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
+const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const LAUNCH_DATE = new Date(process.env.LAUNCH_DATE);
+
+const EPISODE_DATABASE = {
+  'the-rookie': {
+    tmdbId: 79744,
+    seasons: {
+      1: {
+        episodes: {
+          1: {
+            title: 'Pilot',
+            videoUrl: 'YOUR_VIDEO_URL_HERE.m3u8',
+            posterPath: '/path-to-poster.jpg'
+          }
+        }
+      }
+    }
+  }
+};
+
+app.get('/api/test', (req, res) => {
+  res.json({
+    DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID ? 'SET' : 'MISSING',
+    DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET ? 'SET' : 'MISSING',
+    GUILD_ID: process.env.GUILD_ID ? 'SET' : 'MISSING',
+    LAUNCH_DATE: process.env.LAUNCH_DATE ? 'SET' : 'MISSING',
+    TMDB_API_KEY: process.env.TMDB_API_KEY ? 'SET' : 'MISSING'
+  });
+});
 
 app.get('/api/status', (req, res) => {
   const now = new Date();
@@ -33,6 +52,70 @@ app.get('/api/status', (req, res) => {
     launchDate: '2026-01-06T22:00:00Z',
     message: isLive ? 'Episodes are now available' : 'No episodes shown at the moment. MovieClick will go online on January 6 2026 10 pm ET when Season 8 premieres'
   });
+});
+
+app.get('/api/tmdb/show/:showId', async (req, res) => {
+  const { showId } = req.params;
+  
+  try {
+    const response = await axios.get(
+      `https://api.themoviedb.org/3/tv/${showId}`,
+      {
+        params: {
+          api_key: TMDB_API_KEY,
+          append_to_response: 'credits,images'
+        }
+      }
+    );
+    
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch show data' });
+  }
+});
+
+app.get('/api/tmdb/show/:showId/season/:seasonNum', async (req, res) => {
+  const { showId, seasonNum } = req.params;
+  
+  try {
+    const response = await axios.get(
+      `https://api.themoviedb.org/3/tv/${showId}/season/${seasonNum}`,
+      {
+        params: {
+          api_key: TMDB_API_KEY
+        }
+      }
+    );
+    
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch season data' });
+  }
+});
+
+app.get('/api/shows/the-rookie', async (req, res) => {
+  const showData = EPISODE_DATABASE['the-rookie'];
+  
+  try {
+    const tmdbResponse = await axios.get(
+      `https://api.themoviedb.org/3/tv/${showData.tmdbId}`,
+      {
+        params: {
+          api_key: TMDB_API_KEY
+        }
+      }
+    );
+    
+    res.json({
+      ...tmdbResponse.data,
+      availableSeasons: Object.keys(showData.seasons)
+    });
+  } catch (error) {
+    res.json({
+      name: 'The Rookie',
+      availableSeasons: Object.keys(showData.seasons)
+    });
+  }
 });
 
 app.get('/api/s-:season-e-:episode/player', async (req, res) => {
@@ -83,11 +166,35 @@ app.get('/api/s-:season-e-:episode/player', async (req, res) => {
       });
     }
 
+    const episodeData = EPISODE_DATABASE['the-rookie']?.seasons[season]?.episodes[episode];
+    
+    if (!episodeData) {
+      return res.status(404).json({
+        error: 'Episode not found',
+        message: `Season ${season} Episode ${episode} is not available yet`
+      });
+    }
+
+    let tmdbData = null;
+    try {
+      const tmdbResponse = await axios.get(
+        `https://api.themoviedb.org/3/tv/${EPISODE_DATABASE['the-rookie'].tmdbId}/season/${season}/episode/${episode}`,
+        {
+          params: { api_key: TMDB_API_KEY }
+        }
+      );
+      tmdbData = tmdbResponse.data;
+    } catch (err) {
+      console.log('Could not fetch TMDB data');
+    }
+
     res.json({
       episode: `Season ${season} Episode ${episode}`,
-      title: `The Rookie S${season}E${episode}`,
-      playerUrl: `https://player.example.com/s${season}e${episode}`,
-      fileUrl: `https://files.example.com/the-rookie-s${season}e${episode}.mp4`,
+      title: episodeData.title || `The Rookie S${season}E${episode}`,
+      videoUrl: episodeData.videoUrl,
+      poster: tmdbData?.still_path ? `https://image.tmdb.org/t/p/w500${tmdbData.still_path}` : episodeData.posterPath,
+      overview: tmdbData?.overview || '',
+      airDate: tmdbData?.air_date || '',
       canDownload: true,
       user: discordUserId
     });
@@ -105,12 +212,14 @@ app.get('/api/discord/callback', async (req, res) => {
   if (!code) return res.status(400).json({ error: 'No code provided' });
 
   try {
-    const tokenResponse = await axios.post('https://discord.com/api/v10/oauth2/token', {
+    const tokenResponse = await axios.post('https://discord.com/api/v10/oauth2/token', new URLSearchParams({
       client_id: DISCORD_CLIENT_ID,
       client_secret: DISCORD_CLIENT_SECRET,
       code,
       grant_type: 'authorization_code',
       redirect_uri: 'https://movieclicktr-production.up.railway.app/api/discord/callback'
+    }), {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
     });
 
     const accessToken = tokenResponse.data.access_token;
