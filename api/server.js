@@ -14,6 +14,8 @@ const LEVEL_10_ROLE_ID = process.env.LEVEL_10_ROLE_ID;
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
+const BUNNY_LIBRARY_ID = process.env.BUNNY_LIBRARY_ID;
+const BUNNY_CDN_HOSTNAME = process.env.BUNNY_CDN_HOSTNAME;
 const LAUNCH_DATE = new Date(process.env.LAUNCH_DATE);
 
 const EPISODE_DATABASE = {
@@ -24,8 +26,19 @@ const EPISODE_DATABASE = {
         episodes: {
           1: {
             title: 'Pilot',
-            videoUrl: 'YOUR_VIDEO_URL_HERE.m3u8',
-            posterPath: '/path-to-poster.jpg'
+            bunnyVideoId: '906cbfad-ead1-4b48-ad7f-742c79437e83'
+          },
+          2: {
+            title: 'Crash Course',
+            bunnyVideoId: 'ANOTHER_VIDEO_ID'
+          }
+        }
+      },
+      2: {
+        episodes: {
+          1: {
+            title: 'Impact',
+            bunnyVideoId: 'VIDEO_ID_S2E1'
           }
         }
       }
@@ -39,7 +52,8 @@ app.get('/api/test', (req, res) => {
     DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET ? 'SET' : 'MISSING',
     GUILD_ID: process.env.GUILD_ID ? 'SET' : 'MISSING',
     LAUNCH_DATE: process.env.LAUNCH_DATE ? 'SET' : 'MISSING',
-    TMDB_API_KEY: process.env.TMDB_API_KEY ? 'SET' : 'MISSING'
+    TMDB_API_KEY: process.env.TMDB_API_KEY ? 'SET' : 'MISSING',
+    BUNNY_LIBRARY_ID: process.env.BUNNY_LIBRARY_ID ? 'SET' : 'MISSING'
   });
 });
 
@@ -188,11 +202,16 @@ app.get('/api/s-:season-e-:episode/player', async (req, res) => {
       console.log('Could not fetch TMDB data');
     }
 
+    const bunnyVideoId = episodeData.bunnyVideoId;
+    const videoUrl = `https://${BUNNY_CDN_HOSTNAME}/${bunnyVideoId}/playlist.m3u8`;
+    const embedUrl = `https://iframe.mediadelivery.net/embed/${BUNNY_LIBRARY_ID}/${bunnyVideoId}`;
+
     res.json({
       episode: `Season ${season} Episode ${episode}`,
       title: episodeData.title || `The Rookie S${season}E${episode}`,
-      videoUrl: episodeData.videoUrl,
-      poster: tmdbData?.still_path ? `https://image.tmdb.org/t/p/w500${tmdbData.still_path}` : episodeData.posterPath,
+      videoUrl: videoUrl,
+      embedUrl: embedUrl,
+      poster: tmdbData?.still_path ? `https://image.tmdb.org/t/p/w500${tmdbData.still_path}` : null,
       overview: tmdbData?.overview || '',
       airDate: tmdbData?.air_date || '',
       canDownload: true,
